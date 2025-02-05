@@ -149,9 +149,9 @@ def AddTrackerData(APR_dict, tracker_file):
             parts = line_split(line.strip())
             if len(parts) >= 6:
 
-                quote_number = parts[quote_field]
-                assay_type = parts[assay_field]
-                informatician = parts[informatician_field]
+                quote_number = parts[tracker_quote_field]
+                assay_type = parts[tracker_assay_field]
+                informatician = parts[tracker_informatician_field]
 
                 #Quote numbers are numeric and 5 digits long
                 if len(quote_number)==5 and quote_number.isnumeric() and informatician != "":
@@ -173,7 +173,7 @@ def AddTrackerData(APR_dict, tracker_file):
 
 def WriteRevenue(APR_dict, outfile):
     """Write the information from APR_dict to outfile"""
-    with open(out_file,'w') as outfile:
+    with open(outfile,'w') as outfile:
         outfile.write("Quote,Assay,Date,Amount,Informatician")
         for quote, assay, date, amount, informaticians in APR_dict.GetData():
             if informaticians != []:
@@ -181,8 +181,8 @@ def WriteRevenue(APR_dict, outfile):
                 outfile.write("\n{},{},{},{},{}".format(quote,assay,date,amount,''.join(info_in)))
 
 class QuoteStats():
-    def __init__():
-        APR_dict = {}
+    def __init__(self):
+        self.APR_dict = {}
 
     def AddQuote(self,quote_number, assay, invoice_amount, invoice_date):
         """
@@ -190,28 +190,28 @@ class QuoteStats():
         invoiced lines to the invoice amount.
         """
         if self.CheckQuote(quote_number):
-            if assay in APR_dict[quote_number]:
-                APR_dict[quote_number][assay][1] += invoice_amount
+            if assay in self.APR_dict[quote_number]:
+                self.APR_dict[quote_number][assay][1] += invoice_amount
             else:
-                APR_dict[quote_number][assay] = [invoice_date, invoice_amount, []]
+                self.APR_dict[quote_number][assay] = [invoice_date, invoice_amount, []]
         else:
-            APR_dict[quote_number] = {assay:[invoice_date, invoice_amount, []]}
+            self.APR_dict[quote_number] = {assay:[invoice_date, invoice_amount, []]}
 
     def CheckQuote(self, quote_number):
-        return quote_number in APR_dict
+        return quote_number in self.APR_dict
 
     def CheckAssay(self, quote_number, assay):
         if self.CheckQuote(quote_number):
-            return assay in APR_dict[quote_number]
+            return assay in self.APR_dict[quote_number]
         return False
 
     def AddInformatician(self, quote_number, assay, name):
-        APR_dict[quote_number][assay][2].append(name)
+        self.APR_dict[quote_number][assay][2].append(name)
 
     def GetData(self):
-        for quote in APR_dict.keys():
-            for assay in APR_dict[quote].keys():
-                yield quote, assay, APR_dict[quote][assay][0], APR_dict[quote][assay][1], APR_dict[quote][assay][2]
+        for quote in self.APR_dict.keys():
+            for assay in self.APR_dict[quote].keys():
+                yield quote, assay, self.APR_dict[quote][assay][0], self.APR_dict[quote][assay][1], self.APR_dict[quote][assay][2]
 
 if __name__ == "__main__":
     # Takes the services analysis tracker sheet (1), the services apr 
@@ -223,6 +223,6 @@ if __name__ == "__main__":
 
     APR_dict=QuoteStats()
     APR_dict = GetRevenueData(APR_dict, apr_file)
-    APR_dict = AddTrackerData(APR_dict, tracker_file)
+    AddTrackerData(APR_dict, tracker_file)
     WriteRevenue(APR_dict, out_file)
     
