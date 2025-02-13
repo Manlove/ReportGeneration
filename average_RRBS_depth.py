@@ -10,9 +10,11 @@ from across the files provided.
 
 
 import sys
-name_field = 3
+from typing import List, Dict
 
-def parse_header(line):
+NAME_FIELD = 3
+
+def parse_header(line: str) -> List[List[str]]:
     """ 
     {USAGE} Takes the header line of a RRBS_gene_methylation.csv file and
             identifies the "Coverage" columns associated with each sample.
@@ -27,9 +29,11 @@ def parse_header(line):
              columns and then look for additonal names with that name.
 
     """
+
     out_samples = []
     header = line.strip().split(",")
     sample_dict = {}
+
     for i in range(6,len(header)):
         if "Coverage" in header[i]:
             sample = header[i].split(" Coverage")[0].split(" Promoter")[0].split(" Gene Body")[0]
@@ -41,7 +45,7 @@ def parse_header(line):
         out_samples.append(sample_dict[i])
     return out_samples
         
-def parse_coverage(line):
+def parse_coverage(line: str) -> str:
     """ 
     {USAGE} Takes the list of coverage numbers and returns them in string
             format to allow use of a .join function. This function is not
@@ -56,7 +60,9 @@ def parse_coverage(line):
         line[i] = str(line[i])
     return line
 
-def average_dict_genes(temp_gene_to_coverage):
+def average_dict_genes(
+        temp_gene_to_coverage: Dict[str, List[int]]
+        ) -> Dict[str, int]:
     """ 
     {USAGE} Given a dictionary with gene names as the keys and a list of coverage
             from different samples or projects; averages the values for each gene
@@ -67,7 +73,7 @@ def average_dict_genes(temp_gene_to_coverage):
     {UPDATE} 
 
     """
-    for i in temp_gene_to_coverage.keys():
+    for i in temp_gene_to_coverage:
         nsamp=0
         total=0
         for j in temp_gene_to_coverage[i]:
@@ -77,7 +83,10 @@ def average_dict_genes(temp_gene_to_coverage):
         temp_gene_to_coverage[i]=average
     return temp_gene_to_coverage
 
-def combine_gene_to_coverages(gene_to_coverage, temp_gene_to_coverage):
+def combine_gene_to_coverages(
+        gene_to_coverage: Dict[str, List[int]], 
+        temp_gene_to_coverage: Dict[str, int]
+        ) -> Dict[str, List[int]]:
     """ 
     {USAGE} Given two dictionaries with gene names as the keys for both, gene_to_coverage
             having lists of averaged values from multiple projects, and temp_gene_to_coverage
@@ -96,14 +105,14 @@ def combine_gene_to_coverages(gene_to_coverage, temp_gene_to_coverage):
             gene_to_coverage[i] = [temp_gene_to_coverage[i]]
     return gene_to_coverage
 
-# Input files: [1] is the customer gene list with gene names in the name_field column (.csv format)
-customer_file = sys.argv[1]
-gene_to_coverage = {}
+# Input files: [1] is the customer gene list with gene names in the NAME_FIELD column (.csv format)
+customer_file: str = sys.argv[1]
+gene_to_coverage: Dict[str, List[int]] = {}
 
 # {NOTE} The RRBS pipeline returns xlsx files so it would be good to update this to take those.
 for i in range(2,len(sys.argv)):
 
-    temp_gene_to_coverage = {}
+    temp_gene_to_coverage: Dict[str, List[int]] = {}
 
     with open(sys.argv[i],'r') as in_file:
 
@@ -153,7 +162,7 @@ with open(customer_file,'r') as in_file:
         next(in_file)
         for line in in_file:
             fields = line.strip().split(",")
-            if fields[name_field] != "" and fields[name_field] in gene_to_coverage.keys():
-                out_file.write("\n{},{}".format(fields[name_field],gene_to_coverage[fields[name_field]]))
+            if fields[NAME_FIELD] != "" and fields[NAME_FIELD] in gene_to_coverage.keys():
+                out_file.write("\n{},{}".format(fields[NAME_FIELD],gene_to_coverage[fields[NAME_FIELD]]))
                
                 

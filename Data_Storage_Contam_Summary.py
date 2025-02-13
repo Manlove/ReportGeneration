@@ -9,6 +9,7 @@ import os
 import glob
 import datetime
 import time
+from typing import List, Dict, Optional
 
 path_base = "/Volumes/services_data/Data_Storage/"
 excluded_institutes = {"AM", "CTAGBATCH", "QCATAC", "QCCTAG"}
@@ -20,7 +21,7 @@ HEADER = (
     "S.maltophilia,H.polygyrus,Mycoplasma,PhiX,Vectors,No_Genome\n"
 )
 
-def determine_project_type(service_report_path):
+def determine_project_type(service_report_path: str) -> Optional[str]:
     """Determines project type from the service report filename."""
     if "ChIP-Seq" in service_report_path:
         return "ChIP"
@@ -30,7 +31,7 @@ def determine_project_type(service_report_path):
         return "RNA"
     return None
 
-def extract_contamination_data(screen_file):
+def extract_contamination_data(screen_file: str) -> List[str]:
     """Extracts contamination data from a given fastq_screen report."""
     contamination_values = []
     with open(screen_file, "r") as file:
@@ -46,7 +47,7 @@ def extract_contamination_data(screen_file):
                 contamination_values.append(fields[0].split(" ")[1])
     return contamination_values
 
-def main():
+def main() -> None:
     sample_num = 1
     with open(output_file, "w") as outfile:
         outfile.write(HEADER)

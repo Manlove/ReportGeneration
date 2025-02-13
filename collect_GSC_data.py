@@ -8,11 +8,12 @@ Outputs a csv with the number of projects in each bucket for each week.
 
 import glob
 import os
+from typing import List, Dict
 
-def ClearCommas(line):
+def ClearCommas(line: str) -> str:
     """Replaces non-separating commas in a csv file with spaces"""
-    out_string = []
-    quote_count = 0
+    out_string: List[str] = []
+    quote_count: int = 0
     
     for char in line:
         
@@ -26,24 +27,29 @@ def ClearCommas(line):
             
     return "".join(out_string)
 
-
-if __name__ == "__main__":
+def main() -> None:
     # Step through through each week and open the services anaysis tracker file.
     # Opens the files and retrieves the number of projects at each status. 
     with open("gsc_summary.csv", 'w') as summary_outfile:
-        gsc_summary = {"Week":[], "Analyzing":[], "Cancelled":[], "Not started":[],
-                       "On hold":[], "Sequencing incomplete":[], "Delivered":[]
-                       }
+        gsc_summary: Dict[str, List[str | int]] = {
+            "Week":[], 
+            "Analyzing":[],
+            "Cancelled":[],
+            "Not started":[],
+            "On hold":[],
+            "Sequencing incomplete":[],
+            "Delivered":[]
+        }
         for week in os.scandir("."):
-            tracker_path = os.path.join(week.path, "Services Analysis Tracker.csv")
-            status_summary_path = os.path.join(week.path, "status_summary.csv")
+            tracker_path: str = os.path.join(week.path, "Services Analysis Tracker.csv")
+            status_summary_path: str = os.path.join(week.path, "status_summary.csv")
 
             if not week.is_dir() or not os.path.exists(tracker_path):
                 continue
                 
             with open(tracker_path, 'r') as apr_data:
                 next(apr_data)
-                status_data = {}
+                status_data: Dict[str, int] = {}
                 
                 for line in map(ClearCommas,apr_data):
                     line = line.replace('"','').strip().split(",")
@@ -51,7 +57,7 @@ if __name__ == "__main__":
                     # Data in the sharepoint output can be messy.
                     # We drop lines with ten or less fields.
                     if line[0].isnumeric() and len(line) > 10:
-                        status = line[6]
+                        status: str = line[6]
                         status_data[status] = status_data.get(status,0) + 1
 
                             
@@ -76,7 +82,6 @@ if __name__ == "__main__":
                             
             gsc_summary["Delivered"].append(delivered)
 
-
     # Adds all the summaries to a final outfile.
     for key in gsc_summary.keys():
         summary_outfile.write("{}".format(key))
@@ -84,3 +89,5 @@ if __name__ == "__main__":
             summary_outfile.write(",{}".format(i))
         summary_outfile.write("\n")
 
+if __name__ == "__main__":
+    main()

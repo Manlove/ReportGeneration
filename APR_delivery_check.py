@@ -5,22 +5,61 @@ invoiced numbers to bioinformaticians by date.
 """
 
 import sys
+from typing import List, Dict, Generator, Tuple
 
 # Field numbers in input APR sheet
-APR_assay_field = 12
-APR_invoice_date_field = 6
-APR_invoice_amount_field = 7
-APR_quote_field = 0
+APR_ASSAY_FIELD = 12
+APR_INVOICE_DATA_FIELD = 6
+APR_INVOICE_AMOUNT_FIELD = 7
+APR_QUOTE_FIELD = 0
 
 # Field numbers in input tracker sheet
-tracker_quote_field = 1
-tracker_assay_field = 5
-tracker_informatician_field = 7
+TRACKER_QUOTE_FIELD = 1
+TRACKER_ASSAY_FIELD = 5
+TRACKER_INFORMATICIAN_FIELD = 7
 
-def line_split(line):
+class QuoteStats:
+    def __init__(self) -> None:
+        self.APR_dict: Dict[str, List[str, str, List[str]]] = {}
+
+    def add_quote(self,
+                  quote_number: str,
+                  assay: str,
+                  invoice_amount: str,
+                  invoice_date: str
+                  ) -> None:
+        """
+        Adds new quotes, new assays to found quotes or adds additional
+        invoiced lines to the invoice amount.
+        """
+        if self.check_quote(quote_number):
+            if assay in self.APR_dict[quote_number]:
+                self.APR_dict[quote_number][assay][1] += invoice_amount
+            else:
+                self.APR_dict[quote_number][assay] = [invoice_date, invoice_amount, []]
+        else:
+            self.APR_dict[quote_number] = {assay:[invoice_date, invoice_amount, []]}
+
+    def check_quote(self, quote_number: str) -> bool:
+        return quote_number in self.APR_dict
+
+    def check_assay(self, quote_number: str, assay: str) -> bool:
+        if self.check_quote(quote_number):
+            return assay in self.APR_dict[quote_number]
+        return False
+
+    def AddInformatician(self, quote_number: str, assay: str, name: str) -> None:
+        self.APR_dict[quote_number][assay][2].append(name)
+
+    def GetData(self) -> Generator[Tuple[str, str, str, str, List[str]], None, None]:
+        for quote in self.APR_dict.keys():
+            for assay in self.APR_dict[quote].keys():
+                yield quote, assay, self.APR_dict[quote][assay][0], self.APR_dict[quote][assay][1], self.APR_dict[quote][assay][2]
+
+def line_split(line: str) -> str:
     """Replaces non-separating commas in a csv file with spaces and returns a list"""
-    out_string = []
-    quote_count=0
+    out_string: List = []
+    quote_count: int =0
 
     for char in line:
         
@@ -33,10 +72,10 @@ def line_split(line):
 
     return "".join(out_string).split(",")
 
-def check_assay(assay):
+def check_assay(assay: str) -> str:
     """Encapsulates the assay list"""
     
-    assay_dict={
+    assay_dict: Dict[str,str] = {
                 '[ATAC-Seq (No data analysis)]':'ATAC',
                 '[ATAC-Seq (Sample Validation)]':'ATAC validation',
                 '[ATAC-Seq (TissueNo data analysis)]':'ATAC',
@@ -91,7 +130,7 @@ def check_assay(assay):
     
     return assay_dict.get(assay,"")
 
-def parse_informatician(info_in):
+def parse_informatician(info_in: List[str]) -> List[str]:
     """
     Checks if the same person is listed multiple times for a project.
     Returns the original list if more than one person is found.
@@ -106,7 +145,7 @@ def parse_informatician(info_in):
     else:
         return info_in
 
-def GetRevenueData(APR_dict,apr_file):
+def GetRevenueData(APR_dict: QuoteStats, apr_file: str) -> QuoteStats:
     """Get the dollar amount for each project split by assay"""
     with open(apr_file,'r') as apr:
         next(apr)
@@ -114,10 +153,10 @@ def GetRevenueData(APR_dict,apr_file):
             fields=line_split(line.strip())
             if len(fields) > 12:
                 
-                assay_type = fields[APR_assay_field]
-                invoice_date = fields[APR_invoice_date_field]
-                invoice_amount = fields[APR_invoice_amount_field].strip("$")
-                quote_number = fields[APR_quote_field]
+                assay_type = fields[APR_ASSAY_FIELD]
+                invoice_date = fields[APR_INVOICE_DATA_FIELD]
+                invoice_amount = fields[APR_INVOICE_AMOUNT_FIELD].strip("$")
+                quote_number = fields[APR_QUOTE_FIELD]
                 try:
                     if len(quote_number)==5 and quote_number.isnumeric():
                         
@@ -130,7 +169,7 @@ def GetRevenueData(APR_dict,apr_file):
                             check_assay(assay_type) != ""
                             ):
 
-                            APR_dict.AddQuote(
+                            APR_dict.add_quote(
                                 quote_number,
                                 check_assay(assay_type),
                                 float(invoice_amount),
@@ -141,7 +180,7 @@ def GetRevenueData(APR_dict,apr_file):
                     continue
     return APR_dict
 
-def AddTrackerData(APR_dict, tracker_file):
+def AddTrackerData(APR_dict: QuoteStats, tracker_file: str) -> None:
     """Associates informaticians with the projects from the revenue sheet"""
     with open(tracker_file,'r') as tracker:
         next(tracker)
@@ -149,14 +188,14 @@ def AddTrackerData(APR_dict, tracker_file):
             parts = line_split(line.strip())
             if len(parts) >= 6:
 
-                quote_number = parts[tracker_quote_field]
-                assay_type = parts[tracker_assay_field]
-                informatician = parts[tracker_informatician_field]
+                quote_number = parts[TRACKER_QUOTE_FIELD]
+                assay_type = parts[TRACKER_ASSAY_FIELD]
+                informatician = parts[TRACKER_INFORMATICIAN_FIELD]
 
                 #Quote numbers are numeric and 5 digits long
                 if len(quote_number)==5 and quote_number.isnumeric() and informatician != "":
-                    if APR_dict.CheckQuote(quote_number):
-                        if APR_dict.CheckAssay(quote_number, assay_type):
+                    if APR_dict.check_quote(quote_number):
+                        if APR_dict.check_assay(quote_number, assay_type):
                             APR_dict.AddInformatician(quote_number,assay_type,informatician)
 
                         # No analysis projects are not associated with a specific assay
@@ -171,7 +210,7 @@ def AddTrackerData(APR_dict, tracker_file):
                             else:
                                 print(quote_number, assay_type, informatician, len(APR_dict[quote_number]),APR_dict[quote_number])
 
-def WriteRevenue(APR_dict, outfile):
+def WriteRevenue(APR_dict: QuoteStats, outfile: str) -> None:
     """Write the information from APR_dict to outfile"""
     with open(outfile,'w') as outfile:
         outfile.write("Quote,Assay,Date,Amount,Informatician")
@@ -180,48 +219,15 @@ def WriteRevenue(APR_dict, outfile):
                 info_in = parse_informatician(informaticians)
                 outfile.write("\n{},{},{},{},{}".format(quote,assay,date,amount,''.join(info_in)))
 
-class QuoteStats():
-    def __init__(self):
-        self.APR_dict = {}
-
-    def AddQuote(self,quote_number, assay, invoice_amount, invoice_date):
-        """
-        Adds new quotes, new assays to found quotes or adds additional
-        invoiced lines to the invoice amount.
-        """
-        if self.CheckQuote(quote_number):
-            if assay in self.APR_dict[quote_number]:
-                self.APR_dict[quote_number][assay][1] += invoice_amount
-            else:
-                self.APR_dict[quote_number][assay] = [invoice_date, invoice_amount, []]
-        else:
-            self.APR_dict[quote_number] = {assay:[invoice_date, invoice_amount, []]}
-
-    def CheckQuote(self, quote_number):
-        return quote_number in self.APR_dict
-
-    def CheckAssay(self, quote_number, assay):
-        if self.CheckQuote(quote_number):
-            return assay in self.APR_dict[quote_number]
-        return False
-
-    def AddInformatician(self, quote_number, assay, name):
-        self.APR_dict[quote_number][assay][2].append(name)
-
-    def GetData(self):
-        for quote in self.APR_dict.keys():
-            for assay in self.APR_dict[quote].keys():
-                yield quote, assay, self.APR_dict[quote][assay][0], self.APR_dict[quote][assay][1], self.APR_dict[quote][assay][2]
-
 if __name__ == "__main__":
     # Takes the services analysis tracker sheet (1), the services apr 
     # sheet (2), An outfile title (3), and a sheet to output projects 
     # with two informaticians (4) as inputs.
-    tracker_file = sys.argv[1]
-    apr_file = sys.argv[2]
-    out_file = sys.argv[3]
+    tracker_file: str = sys.argv[1]
+    apr_file: str = sys.argv[2]
+    out_file: str = sys.argv[3]
 
-    APR_dict=QuoteStats()
+    APR_dict = QuoteStats()
     APR_dict = GetRevenueData(APR_dict, apr_file)
     AddTrackerData(APR_dict, tracker_file)
     WriteRevenue(APR_dict, out_file)

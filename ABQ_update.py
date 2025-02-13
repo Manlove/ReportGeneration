@@ -5,6 +5,7 @@ in the antibody validation pass fail rate sheet
 
 projects = []
 ABQ_LIST = []
+
 with open("/Users/lmanlove/Downloads/Antibody validation pass fail rate 2024.csv",'r') as infile:
     header = infile.readline()
 
