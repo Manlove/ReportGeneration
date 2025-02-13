@@ -19,15 +19,15 @@ import glob
         # save each sample to a list or dictionary to reduce duplicate samples
 
 # Path to saved run info
-multi_demux_dir = "/multi_demux/"
+MULTI_DEMUX_DIR: str = "/multi_demux/"
 
 with open('NextSeq_Demux_Contam_Log.csv', "w") as logfile:
     with open('NextSeq_Demux_Contam_Summary.csv', "w") as outfile:
         outfile.write("Sample_Name,Run_Number,Run_Date,Machine,Lane,Project_ID,Assay_Type,Species,AllLanes_TotalReads,Human (one hit - one genome),Human Mapped,Mouse (one hit - one genome),Mouse Mapped,,,,\n")
 
         # Step through each saved nextseq run directory
-        for nextseq_run in listdir(multi_demux_dir):
-            if os.path.isdir(os.path.join(multi_demux_dir, nextseq_run)):
+        for nextseq_run in listdir(MULTI_DEMUX_DIR):
+            if os.path.isdir(os.path.join(MULTI_DEMUX_DIR, nextseq_run)):
 
                 # Save the run number, date, and machine
                 run_number = nextseq_run.split("_")[2]
@@ -38,14 +38,14 @@ with open('NextSeq_Demux_Contam_Log.csv', "w") as logfile:
                 run_sample_list = {}
 
                 # Steps through multiple demux in the run directory
-                for demux in listdir(os.path.join(multi_demux_dir, nextseq_run)):
-                    if os.path.isdir(os.path.join(multi_demux_dir, nextseq_run, demux)):
+                for demux in listdir(os.path.join(MULTI_DEMUX_DIR, nextseq_run)):
+                    if os.path.isdir(os.path.join(MULTI_DEMUX_DIR, nextseq_run, demux)):
 
                         # Creates a dictionary to hold the sample and the QC info from the individual demux
                         demux_sample_list = {}
 
                         # Opens the samplesheet for the demux and grabs all the sample names
-                        with open(glob.glob(os.path.join(multi_demux_dir, nextseq_run, demux,'SampleSheet*.csv')), 'r') as SampleSheetSummary:
+                        with open(glob.glob(os.path.join(MULTI_DEMUX_DIR, nextseq_run, demux,'SampleSheet*.csv')), 'r') as SampleSheetSummary:
                             line = SampleSheetSummary.readline()
                             while "[Data]" not in line:
                                 line = SampleSheetSummary.readline()
@@ -76,7 +76,7 @@ with open('NextSeq_Demux_Contam_Log.csv', "w") as logfile:
 
                         # Opens the run stats tsv file and retrieves the read numbers for each sample
                         try:
-                            with open(glob.glob(os.path.join(multi_demux_dir, nextseq_run, demux,"*.tsv"))[0], 'r') as RunStatistics:
+                            with open(glob.glob(os.path.join(MULTI_DEMUX_DIR, nextseq_run, demux,"*.tsv"))[0], 'r') as RunStatistics:
                                 next(RunStatistics)
                                 for line in RunStatistics:
                                     line = line.strip().split("\t")
@@ -85,7 +85,7 @@ with open('NextSeq_Demux_Contam_Log.csv', "w") as logfile:
                                     elif line[0] != "Undetermined":
                                         logfile.write('sample {0} in tsv but not found in samplesheet\n'.format(line[0]))
                         except:
-                            tsv_file = glob.glob(os.path.join(multi_demux_dir, nextseq_run, demux,"*.tsv"))
+                            tsv_file = glob.glob(os.path.join(MULTI_DEMUX_DIR, nextseq_run, demux,"*.tsv"))
                             if len(tsv_file) > 0:
                                 logfile.write("Unknown error opening tsv with run number: {0}\n".format(run_number))
                             else:
@@ -101,10 +101,10 @@ with open('NextSeq_Demux_Contam_Log.csv', "w") as logfile:
                                 if name not in run_sample_list.keys() or int(demux_sample_list[name][3]) > int(run_sample_list[name[3]]):
 
                                     # Finds the correct fastq_screen naming convention
-                                    if os.path.isfile(os.path.join(multi_demux_dir, nextseq_run, demux, name + "_r1_screen.txt")):
-                                        screen_path = os.path.join(multi_demux_dir, nextseq_run, demux, name + "_r1_screen.txt")
+                                    if os.path.isfile(os.path.join(MULTI_DEMUX_DIR, nextseq_run, demux, name + "_r1_screen.txt")):
+                                        screen_path = os.path.join(MULTI_DEMUX_DIR, nextseq_run, demux, name + "_r1_screen.txt")
                                     else:
-                                        screen_path = os.path.join(multi_demux_dir, nextseq_run, demux, name + "_screen.txt")
+                                        screen_path = os.path.join(MULTI_DEMUX_DIR, nextseq_run, demux, name + "_screen.txt")
 
                                     # Opens the fastq_screen file
                                     with open(screen_path, 'r') as screen_file:

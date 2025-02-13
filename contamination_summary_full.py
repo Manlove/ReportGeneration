@@ -11,7 +11,7 @@ from os import listdir
 import os.path
 
 
-def summarize_contamination(home_dir, run_dir, run_num, run_date, write_file):
+def summarize_contamination(home_dir: str, run_dir: str, run_num: str, run_date: str, write_file: str) -> None:
 
     if (
         os.path.exists(os.path.join(home_dir, run_dir, 'Demux_Params','SampleSheetSummary.csv')) and 
@@ -69,7 +69,7 @@ def summarize_contamination(home_dir, run_dir, run_num, run_date, write_file):
     else:
         print("Run failed", run_dir)
 
-home_dir = sys.argv[1]
+home_dir: str = sys.argv[1]
 
 if os.path.isdir(home_dir):
     with open("output2.csv", 'w') as output:

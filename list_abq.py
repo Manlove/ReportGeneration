@@ -8,14 +8,14 @@ ABQs use MACS, while full-scale projects use MACS2.
 import os
 import datetime
 
-base_dir = "/home/mnt/services_data/Data_Storage/"
-output_file = "/home/lmanlove/scripts/abq_list_file.txt"
+BASE_DIR: str = "/home/mnt/services_data/Data_Storage/"
+OUTPUT_FILE: str = "/home/lmanlove/scripts/abq_list_file.txt"
 
-with open(output_file, 'w') as abq_list_outfile:
+with open(OUTPUT_FILE, 'w') as abq_list_outfile:
     abq_list_outfile.write("Project\tInstitute\tNumber of samples\tDate")
 
-    for institute in os.scandir(base_dir):
-        institute_path = os.path.join(base_dir, institute)
+    for institute in os.scandir(BASE_DIR):
+        institute_path = os.path.join(BASE_DIR, institute)
 
         if not os.path.isdir(institute_path):
             continue

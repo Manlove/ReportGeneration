@@ -4,7 +4,7 @@ import sys
 import glob
 from os.path import isfile
 
-home_dir = sys.argv[1]
+home_dir: str = sys.argv[1]
 
 # reads the lines in a samplesheet and creates a dictionary of the samples with sample information [run type, genome, dictionary for contam]
 with open(glob.glob(home_dir + "/SampleSheet*.csv")[0], 'r') as SampleSheetSummary:

@@ -4,7 +4,7 @@ import time
 import datetime
 import glob
 
-def clean_str(in_str):
+def clean_str(in_str: str) -> str:
     keep = False
     out_str = ""
     for i in range(0,len(in_str)):
@@ -25,14 +25,14 @@ def clean_str(in_str):
         # save each sample to a list or dictionary to reduce duplicate samples
 
 # Path to run info
-multi_demux_dir = "/Volumes/NovaSeq_Data/"
+MULTI_DEMUX_DIR: str = "/Volumes/NovaSeq_Data/"
 
 with open('NovaSeq_PF_Summary.csv', "w") as outfile:
     outfile.write("Run_Number,Run_Date,Assays,PF")
 
     # Step through each run directory
-    for seq_run in listdir(multi_demux_dir):
-        if os.path.isdir(os.path.join(multi_demux_dir, seq_run)):
+    for seq_run in listdir(MULTI_DEMUX_DIR):
+        if os.path.isdir(os.path.join(MULTI_DEMUX_DIR, seq_run)):
             if len(seq_run.split("_")) > 2:
 
                 #Save the run number, date, and machine
@@ -40,10 +40,10 @@ with open('NovaSeq_PF_Summary.csv', "w") as outfile:
                 run_date = seq_run.split("_")[0]
                 run_machine = seq_run.split("_")[1]
 
-                lane_path = glob.glob(os.path.join(multi_demux_dir, seq_run, "Demux_Results","*Reports","html","*","all","all","all","lane.html"))
+                lane_path = glob.glob(os.path.join(MULTI_DEMUX_DIR, seq_run, "Demux_Results","*Reports","html","*","all","all","all","lane.html"))
                 if len(lane_path) > 0:
                     assaytypes = []
-                    with open(os.path.join(multi_demux_dir, seq_run,"Demux_Params","SampleSheetSummary.csv"),'r') as sumfile:
+                    with open(os.path.join(MULTI_DEMUX_DIR, seq_run,"Demux_Params","SampleSheetSummary.csv"),'r') as sumfile:
                         sumfile.readline()
                         for line in sumfile.readlines():
                             line = line.strip().split(",")

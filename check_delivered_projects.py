@@ -4,12 +4,14 @@ against the projects that have been demultiplexed to ensure
 that all of the projects have been logged
 """
 
-tracker_list = "Services Analysis Tracker.csv"
-demuxed_list = "demuxed_projects.csv"
+from typing import Dict
 
-logged_projects = {}
+TRACKER_LIST: str = "Services Analysis Tracker.csv"
+DEMUXED_LIST: str = "demuxed_projects.csv"
 
-with open(tracker_list,'r') as tracker:
+logged_projects: Dict[str, str] = {}
+
+with open(TRACKER_LIST,'r') as tracker:
     next(tracker)
     for line in tracker:
         split_line = line.strip().split(",")
@@ -24,7 +26,7 @@ with open(tracker_list,'r') as tracker:
                 logged_projects[split_line[1]] = "NA"
 
 with open("/Users/lmanlove/Desktop/matched_list.csv", 'w') as output:
-    with open(demuxed_list, 'r') as demuxed:
+    with open(DEMUXED_LIST, 'r') as demuxed:
         for line in demuxed:
             if line.strip() in logged_projects:
                 output.write("{},{}\n".format(line.strip(), logged_projects[line.strip()]))

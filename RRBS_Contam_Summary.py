@@ -9,26 +9,26 @@ import os.path
 import time
 import datetime
 
-path_base = "/Data_Storage/"
+PATH_BASE: str = "/Data_Storage/"
 
 with open("RRBS_Contam_Summary.csv", "w") as outfile:
     outfile.write("Sample_Number, Sample_Name, Institute, Project, Day, Month, Year, Type, Human, Mouse, Rat, Cow, Drosophila, E.coli, S.maltophilia, H.polygyrus, Mycoplasma, PhiX, Vectors, No_Genome")
     sample_num = 1
-    for institute in listdir(path_base):
+    for institute in listdir(PATH_BASE):
         # Skips 
-        if os.path.isdir(path_base + institute) and institute not in ["AM", "CTAGBATCH", "QCATAC", "QCCTAG"]:
-            for project in listdir(os.path.join(path_base,institute)):
-                if os.path.isdir(os.path.join(path_base,institute, project)):
+        if os.path.isdir(PATH_BASE + institute) and institute not in ["AM", "CTAGBATCH", "QCATAC", "QCCTAG"]:
+            for project in listdir(os.path.join(PATH_BASE,institute)):
+                if os.path.isdir(os.path.join(PATH_BASE,institute, project)):
 
-                    service_report_path = glob.glob(os.path.join(path_base, institute, project, "RRBS_Services_Report*.pdf"))
+                    service_report_path = glob.glob(os.path.join(PATH_BASE, institute, project, "RRBS_Services_Report*.pdf"))
                     if len(service_report_path) > 0 and os.path.exists(service_report_path[0]):
 
                         project_date = datetime.datetime.strptime(time.ctime(os.path.getmtime(service_report_path[0])), "%a %b %d %H:%M:%S %Y")
                         if project_date.year >= 2021:
                             project_type = "RRBS"
-                            screen_path = os.path.join(path_base, institute, project, "QC", "fastq_screen")
+                            screen_path = os.path.join(PATH_BASE, institute, project, "QC", "fastq_screen")
                             if os.path.isdir(screen_path):
-                                for screen_file in glob.glob(os.path.join(path_base, institute, project, "QC", "fastq_screen", "*r1_screen.txt")):
+                                for screen_file in glob.glob(os.path.join(PATH_BASE, institute, project, "QC", "fastq_screen", "*r1_screen.txt")):
 
                                     sample_name = "_".join(screen_file.split("/")[-1].split("_")[0:7])
                                     outfile.write("\n{0},{1},{2},{3},{4},{5},{6},{7}".format(

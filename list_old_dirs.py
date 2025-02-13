@@ -15,15 +15,16 @@ import datetime
 
 delete_date = datetime.date(2021,1,1)
 
-path_base = "/home/mnt/services_data/Data_Storage/"
+PATH_BASE: str = "/home/mnt/services_data/Data_Storage/"
+
 with open("old_dirs.csv", "w") as outfile:
-    for institute in listdir(path_base):
-        if os.path.isdir(path_base + institute) and institute not in ["AM", "CTAGBATCH", "QCATAC", "QCCTAG"]:
+    for institute in listdir(PATH_BASE):
+        if os.path.isdir(PATH_BASE + institute) and institute not in ["AM", "CTAGBATCH", "QCATAC", "QCCTAG"]:
             print(institute)
 
             # get a list of the project directories in the institute directory
-            for project in listdir(os.path.join(path_base,institute)):
-                if os.path.isdir(os.path.join(path_base,institute, project)):
+            for project in listdir(os.path.join(PATH_BASE,institute)):
+                if os.path.isdir(os.path.join(PATH_BASE,institute, project)):
                     print("\t{0}".format(project))
 
                     # Assumes everything is old
@@ -32,11 +33,11 @@ with open("old_dirs.csv", "w") as outfile:
                     save_time = None
 
                     # Steps through each file and folder
-                    for item in listdir(os.path.join(path_base, institute, project)):
-                        if os.path.isdir(os.path.join(path_base, institute, project, item)) or os.path.isfile(os.path.join(path_base, institute, project, item)):
+                    for item in listdir(os.path.join(PATH_BASE, institute, project)):
+                        if os.path.isdir(os.path.join(PATH_BASE, institute, project, item)) or os.path.isfile(os.path.join(PATH_BASE, institute, project, item)):
 
                             # Gets the last modified date of the item
-                            a = stat(os.path.join(path_base, institute, project, item)).st_mtime
+                            a = stat(os.path.join(PATH_BASE, institute, project, item)).st_mtime
                             file_time = datetime.datetime.fromtimestamp(a).date()
 
                             # Checks if there is a time saved in save_time
@@ -54,5 +55,5 @@ with open("old_dirs.csv", "w") as outfile:
 
                     # If the project should still be deleted writes a file of paths and a file with paths and last modified date
                     if is_old and save_time != None:
-                        #print(os.path.join(path_base, institute, project))
-                        outfile.write("{0}\n".format(os.path.join(path_base, institute, project)))
+                        #print(os.path.join(PATH_BASE, institute, project))
+                        outfile.write("{0}\n".format(os.path.join(PATH_BASE, institute, project)))

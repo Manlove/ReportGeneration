@@ -6,16 +6,16 @@ Build around on newer demultiplex output
 
 import sys
 
-home_dir = sys.argv[1]
+HOME_DIR: str = sys.argv[1]
 
-with open(home_dir + '/Demux_Params/SampleSheetSummary.csv', 'r') as SampleSheetSummary:
+with open(HOME_DIR + '/Demux_Params/SampleSheetSummary.csv', 'r') as SampleSheetSummary:
     next(SampleSheetSummary)
     sample_list = {}
     for line in SampleSheetSummary:
         line = line.strip().split(",")
         sample_list[line[0]] = [line[1], line[2], line[3], line[7], {}]
 
-with open(home_dir + '/Demux_Results/QC/RunStatistics.csv', 'r') as RunStatistics:
+with open(HOME_DIR + '/Demux_Results/QC/RunStatistics.csv', 'r') as RunStatistics:
     next(RunStatistics)
     for line in RunStatistics:
         line = line.strip().split(",")
@@ -35,7 +35,7 @@ with open("output.csv", 'w') as output:
         else:
             trail = "_r1_screen.txt"
 
-        with open(home_dir + "/Demux_Results/QC/fastq_screen/" + sample_list[name][0] + "/" + name + trail, 'r') as screen_file:
+        with open(HOME_DIR + "/Demux_Results/QC/fastq_screen/" + sample_list[name][0] + "/" + name + trail, 'r') as screen_file:
             next(screen_file)
             next(screen_file)
             for line in screen_file:
